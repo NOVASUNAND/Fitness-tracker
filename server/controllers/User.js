@@ -56,7 +56,7 @@ export const UserLogin = async (req, res, next) => {
       expiresIn: "9999 years",
     });
 
-    return res.status(200).json({ token, user });
+    return res.status(201).json({ token, user: createdUser });
   } catch (error) {
     return next(error);
   }
