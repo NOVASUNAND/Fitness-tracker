@@ -56,7 +56,7 @@ export const UserLogin = async (req, res, next) => {
       expiresIn: "9999 years",
     });
 
-    return res.status(201).json({ token, user: createdUser });
+    return res.status(200).json({ token, user });
   } catch (error) {
     return next(error);
   }
@@ -238,7 +238,8 @@ export const addWorkout = async (req, res, next) => {
     let count = 0;
 
     // Loop through each line to parse workout details
-    await eachworkout.forEach((line) => {
+    // We CANNOT use forEach with async/await, so we use a standard loop
+    for (const line of eachworkout) {
       count++;
       if (line.startsWith("#")) {
         const parts = line?.split("\n").map((part) => part.trim());
@@ -267,19 +268,32 @@ export const addWorkout = async (req, res, next) => {
           createError(400, `Workout string is missing for ${count}th workout`)
         );
       }
-    });
+    }
 
-    // Calculate calories burnt for each workout
-    await parsedWorkouts.forEach(async (workout) => {
+    // --- THIS IS THE MAIN FIX ---
+    // We MUST use a 'for...of' loop instead of 'forEach' 
+    // This allows the 'try...catch' block to handle errors correctly.
+    
+    for (const workout of parsedWorkouts) {
       workout.caloriesBurned = parseFloat(calculateCaloriesBurnt(workout));
+      // This 'await' is now safely inside the try...catch block
       await Workout.create({ ...workout, user: userId });
-    });
+    }
+    // --- END OF FIX ---
 
     return res.status(201).json({
       message: "Workouts added successfully",
       workouts: parsedWorkouts,
     });
+
   } catch (err) {
+    // --- ADD THIS CATCH FOR THE E11000 ERROR ---
+    if (err.code === 11000) {
+      return next(
+        createError(409, `A workout named '${err.keyValue.workoutName}' already exists.`)
+      );
+    }
+    // --- END OF CATCH ---
     next(err);
   }
 };

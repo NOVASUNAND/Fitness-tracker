@@ -1,8 +1,12 @@
 import axios from "axios";
 
+// Define the URLs
+const devURL = "http://localhost:8080/api/";
+const prodURL = "https://fitnesstrack-vtv1.onrender.com/api/";
+
+// Automatically choose the correct URL based on the environment
 const API = axios.create({
-  //baseURL: "http://localhost:8080/api/",
-  baseURL: "https://fitnesstrack-vtv1.onrender.com/api/",
+  baseURL: process.env.NODE_ENV === "production" ? prodURL : devURL,
 });
 
 export const UserSignUp = async (data) => API.post("/user/signup", data);

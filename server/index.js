@@ -8,19 +8,58 @@ dotenv.config();
 
 const app = express();
 
+// --- THIS IS THE FINAL FIX ---
 
-app.use(cors({
-  origin: "https://fitness-tracker-sun.netlify.app",
+// Define a list of allowed origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://fitness-tracker-sun.netlify.app" 
+];
+
+// We define the cors options
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
-}));
+  // This explicitly tells cors to handle preflight requests
+  // and send a 204 (No Content) success status.
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+// 1. Logger (to see all requests)
+app.use((req, res, next) => {
+  console.log(`INCOMING REQUEST: ${req.method} ${req.url}`);
+  next();
+});
+
+// 2. This ONE line handles all CORS requests
+app.use(cors(corsOptions));
+
+// --- END OF FIX ---
 
 
+// Your other middleware
 app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true })); // for form data
+app.use(express.urlencoded({ extended: true })); 
 
+// Your routes
 app.use("/api/user/", UserRoutes);
-// error handler
+
+// Base route
+app.get("/", async (req, res) => {
+  res.status(200).json({
+    message: "Hello world",
+  });
+});
+
+// Error handler
 app.use((err, req, res, next) => {
   const status = err.status || 500;
   const message = err.message || "Something went wrong";
@@ -31,16 +70,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.get("/", async (req, res) => {
-  res.status(200).json({
-    message: "Hello world",
-  });
-});
-
+// Database and Server Start
 const connectDB = () => {
   mongoose.set("strictQuery", true);
   mongoose
-    .connect(process.env.MONGODB_URL)
+    .connect(process.env.MONGODB_URL) 
     .then(() => console.log("Connected to Mongo DB"))
     .catch((err) => {
       console.error("failed to connect with mongo");
