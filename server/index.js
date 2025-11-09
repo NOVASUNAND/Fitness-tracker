@@ -8,9 +8,9 @@ dotenv.config();
 
 const app = express();
 
-// --- THIS IS THE FINAL FIX ---
 
-// Define a list of allowed origins
+
+
 const allowedOrigins = [
   "http://localhost:3000",
   "https://fitness-tracker-sun.netlify.app" 
@@ -39,20 +39,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// 2. This ONE line handles all CORS requests
+
 app.use(cors(corsOptions));
 
-// --- END OF FIX ---
 
 
-// Your other middleware
+
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true })); 
 
-// Your routes
+
 app.use("/api/user/", UserRoutes);
 
-// Base route
+
 app.get("/", async (req, res) => {
   res.status(200).json({
     message: "Hello world",
