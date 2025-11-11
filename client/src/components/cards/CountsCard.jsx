@@ -81,12 +81,34 @@ const Desc = styled.div`
 `;
 
 const CountsCard = ({ item, data }) => {
+  // --- THIS IS THE FIX ---
+  // This function uses item.name to find the correct data
+  // instead of the buggy item.key
+  const getValue = () => {
+    if (!data) return "0.00";
+
+    switch (item.name) {
+      case "Calories Burned":
+        // Use the key from your API
+        return (data.totalCaloriesBurnt || 0).toFixed(2);
+      case "Workouts":
+        // Use the key from your API
+        return data.totalWorkouts || 0;
+      case "Average Calories Burned":
+        // Use the key from your API
+        return (data.avgCaloriesBurntPerWorkout || 0).toFixed(2);
+      default:
+        return "0.00";
+    }
+  };
+  // --- END OF FIX ---
+
   return (
     <Card>
       <Left>
         <Title>{item.name}</Title>
         <Value>
-          {data && data[item.key].toFixed(2)}
+          {getValue()} {/* Use the new function here */}
           <Unit>{item.unit}</Unit>
           <Span positive>(+10%)</Span>
         </Value>
