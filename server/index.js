@@ -13,7 +13,8 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://fitness-tracker-sun.netlify.app" 
+  //"https://fitness-tracker-sun.netlify.app" 
+  "https://your-new-vercel-url.vercel.app"
 ];
 
 // We define the cors options
