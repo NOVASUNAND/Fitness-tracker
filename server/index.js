@@ -41,8 +41,8 @@ const connectDB = async () => {
   try {
     mongoose.set("strictQuery", true);
     
-    // Clean and secure: No passwords written in the code!
-    await mongoose.connect(process.env.MONGODB_URL); 
+    // We are pasting the absolute raw string here. Render CANNOT misread this.
+    await mongoose.connect("mongodb://homie:Homie100@cluster0-shard-00-00.n2epvsd.mongodb.net:27017,cluster0-shard-00-01.n2epvsd.mongodb.net:27017,cluster0-shard-00-02.n2epvsd.mongodb.net:27017/fitness-tracker?ssl=true&replicaSet=atlas-m0z6m8-shard-0&authSource=admin&retryWrites=true&w=majority"); 
     
     console.log("🚀 Connected to Mongo DB Successfully!");
   } catch (err) {
