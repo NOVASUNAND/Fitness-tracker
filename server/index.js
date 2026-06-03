@@ -36,20 +36,27 @@ app.use((err, req, res, next) => {
   });
 });
 
-const connectDB = () => {
-  mongoose.set("strictQuery", true);
-  mongoose
-    .connect(process.env.MONGODB_URL) 
-    .then(() => console.log("Connected to Mongo DB"))
-    .catch((err) => {
-      console.error("failed to connect with mongo");
-      console.error(err);
-    });
+// 1. Add 'async' to this function so we can handle the database promise cleanly
+const connectDB = async () => {
+  try {
+    mongoose.set("strictQuery", true);
+    
+    // 2. Add 'await' here so the execution halts until MongoDB says "Connected"
+    await mongoose.connect(process.env.MONGODB_URL); 
+    console.log("🚀 Connected to Mongo DB Successfully!");
+  } catch (err) {
+    console.error("❌ Failed to connect with mongo");
+    console.error(err);
+    process.exit(1); // Force-kill the process if the database string is wrong
+  }
 };
 
 const startServer = async () => {
   try {
-    connectDB();
+    // 3. Force your server to completely establish the DB connection FIRST
+    await connectDB();
+    
+    // 4. Only start listening for frontend requests AFTER the database is ready
     app.listen(8080, () => console.log("Server started on port 8080"));
   } catch (error) {
     console.log(error);
