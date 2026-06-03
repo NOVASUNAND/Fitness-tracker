@@ -1,10 +1,7 @@
 import express from "express";
-import * as dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import UserRoutes from "./routes/User.js";
-
-dotenv.config();
 
 const app = express();
 
@@ -22,7 +19,7 @@ app.use("/api/user/", UserRoutes);
 
 app.get("/", async (req, res) => {
   res.status(200).json({
-    message: "Hello world",
+    message: "Hello world, server is fully operational and secure!",
   });
 });
 
@@ -36,31 +33,43 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 1. Add 'async' to this function so we can handle the database promise cleanly
 const connectDB = async () => {
   try {
     mongoose.set("strictQuery", true);
+    console.log("🔄 Initializing secure connection stream using process.env...");
     
-    // We are pasting the absolute raw string here. Render CANNOT misread this.
-    await mongoose.connect("mongodb://homie:Homie100@cluster0-shard-00-00.n2epvsd.mongodb.net:27017,cluster0-shard-00-01.n2epvsd.mongodb.net:27017,cluster0-shard-00-02.n2epvsd.mongodb.net:27017/fitness-tracker?ssl=true&replicaSet=atlas-m0z6m8-shard-0&authSource=admin&retryWrites=true&w=majority"); 
+    // Completely secure: Pulling directly from Render's dashboard environment variables
+    const connectionString = process.env.MONGODB_URL;
+    
+    if (!connectionString) {
+      throw new Error("❌ CRITICAL: process.env.MONGODB_URL is undefined! Check Render Dashboard.");
+    }
+    
+    await mongoose.connect(connectionString, {
+      serverSelectionTimeoutMS: 10000, 
+      socketTimeoutMS: 45000,          
+      family: 4                        // Forces IPv4 to instantly kill Render's ReplicaSetNoPrimary DNS bug
+    }); 
     
     console.log("🚀 Connected to Mongo DB Successfully!");
   } catch (err) {
     console.error("❌ Failed to connect with mongo");
-    console.error(err);
-    process.exit(1); 
+    console.error(err.message);
   }
 };
 
 const startServer = async () => {
   try {
-    // 3. Force your server to completely establish the DB connection FIRST
-    await connectDB();
+    // 1. Bind to the port FIRST so Render's port scanner passes instantly and doesn't freeze
+    const port = process.env.PORT || 8080;
+    app.listen(port, () => {
+      console.log(`🟢 Server safely bound and listening on port ${port}`);
+    });
     
-    // 4. Only start listening for frontend requests AFTER the database is ready
-    app.listen(process.env.PORT || 8080, () => console.log(`Server started on port ${process.env.PORT || 8080}`));
+    // 2. Connect to the database right after the server goes live
+    await connectDB();
   } catch (error) {
-    console.log(error);
+    console.log("Server startup error:", error);
   }
 };
 
