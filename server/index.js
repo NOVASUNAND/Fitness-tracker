@@ -41,13 +41,14 @@ const connectDB = async () => {
   try {
     mongoose.set("strictQuery", true);
     
-    // 2. Add 'await' here so the execution halts until MongoDB says "Connected"
+    // Clean and secure: No passwords written in the code!
     await mongoose.connect(process.env.MONGODB_URL); 
+    
     console.log("🚀 Connected to Mongo DB Successfully!");
   } catch (err) {
     console.error("❌ Failed to connect with mongo");
     console.error(err);
-    process.exit(1); // Force-kill the process if the database string is wrong
+    process.exit(1); 
   }
 };
 
