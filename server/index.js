@@ -58,7 +58,7 @@ const startServer = async () => {
     await connectDB();
     
     // 4. Only start listening for frontend requests AFTER the database is ready
-    app.listen(8080, () => console.log("Server started on port 8080"));
+    app.listen(process.env.PORT || 8080, () => console.log(`Server started on port ${process.env.PORT || 8080}`));
   } catch (error) {
     console.log(error);
   }
